@@ -1,0 +1,297 @@
+openapi: 3.0.3
+info:
+  title: CogniLink Decks API
+  version: "1.0.0"
+  description: >
+    Contrato dos endpoints de gestao de baralhos (decks) do CogniLink
+    (feature 002-deck-management). Todos os endpoints usam HTTPS e exigem
+    access token JWT valido ("security: bearerAuth"); o proprietario do
+    baralho e resolvido a partir das claims do token, nunca de parametros
+    de entrada. Qualquer operacao sobre baralho de outro usuario retorna
+    404, nunca 403 (RF-06).
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+paths:
+  /decks:
+    post:
+      summary: Criar baralho
+      operationId: createDeck
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeckRequest'
+      responses:
+        '201':
+          description: Baralho criado, vinculado ao usuario autenticado (FR-001).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeckResponse'
+        '400':
+          description: >
+            Dados invalidos (nome ausente/tamanho invalido, descricao
+            excedendo 500 caracteres, mais de 5 categorias, categoria
+            acima de 30 caracteres, dificuldade fora do enum).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: Listar baralhos do usuario autenticado
+      operationId: listDecks
+      parameters:
+        - name: search
+          in: query
+          required: false
+          description: Filtro por nome (contains, case-insensitive).
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: Numero da pagina (1-based). Padrao 1.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          description: Itens por pagina. Padrao 10, maximo 100.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: >
+            Lista paginada contendo somente baralhos do usuario autenticado
+            (FR-002). Lista vazia quando o usuario nao possui baralhos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedDeckResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /decks/{id}:
+    get:
+      summary: Obter detalhes de um baralho proprio
+      operationId: getDeckById
+      parameters:
+        - $ref: '#/components/parameters/DeckId'
+      responses:
+        '200':
+          description: Detalhes do baralho, incluindo cardCount fixo em 0 (FR-003, FR-011).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeckResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: >
+            Baralho inexistente ou pertencente a outro usuario (FR-006);
+            resposta identica em ambos os casos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Editar nome, descricao, dificuldade e categorias de baralho proprio
+      operationId: updateDeck
+      parameters:
+        - $ref: '#/components/parameters/DeckId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeckRequest'
+      responses:
+        '200':
+          description: Baralho atualizado (FR-004).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeckResponse'
+        '400':
+          description: Dados invalidos (mesmas regras da criacao).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Baralho inexistente ou pertencente a outro usuario (FR-006).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Excluir baralho proprio
+      operationId: deleteDeck
+      parameters:
+        - $ref: '#/components/parameters/DeckId'
+      responses:
+        '204':
+          description: >
+            Baralho excluido definitivamente (hard delete), sem exclusao
+            em cascata de outras entidades (FR-005, FR-012).
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Baralho inexistente ou pertencente a outro usuario (FR-006).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    DeckId:
+      name: id
+      in: path
+      required: true
+      description: Identificador do baralho.
+      schema:
+        type: string
+
+  schemas:
+    DeckDifficulty:
+      type: string
+      enum: [Facil, Medio, Dificil]
+
+    CreateDeckRequest:
+      type: object
+      required: [name, difficulty]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+        difficulty:
+          $ref: '#/components/schemas/DeckDifficulty'
+        categories:
+          type: array
+          maxItems: 5
+          items:
+            type: string
+            maxLength: 30
+          default: []
+
+    UpdateDeckRequest:
+      type: object
+      required: [name, difficulty]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+        difficulty:
+          $ref: '#/components/schemas/DeckDifficulty'
+        categories:
+          type: array
+          maxItems: 5
+          items:
+            type: string
+            maxLength: 30
+          default: []
+
+    DeckResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        difficulty:
+          $ref: '#/components/schemas/DeckDifficulty'
+        categories:
+          type: array
+          items:
+            type: string
+        cardCount:
+          type: integer
+          description: Sempre 0 nesta feature (flashcards fora de escopo, FR-011).
+          example: 0
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PagedDeckResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeckResponse'
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalCount:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string

@@ -1,0 +1,12 @@
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Domain\bin\Debug\net10.0\CogniLink.Domain.deps.json
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Domain\bin\Debug\net10.0\CogniLink.Domain.dll
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Domain\bin\Debug\net10.0\CogniLink.Domain.pdb
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Domain\obj\Debug\net10.0\CogniLink.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Domain\obj\Debug\net10.0\CogniLink.Domain.AssemblyInfoInputs.cache
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Domain\obj\Debug\net10.0\CogniLink.Domain.AssemblyInfo.cs
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Domain\obj\Debug\net10.0\CogniLink.Domain.csproj.CoreCompileInputs.cache
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Domain\obj\Debug\net10.0\CogniLink.Domain.sourcelink.json
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Domain\obj\Debug\net10.0\CogniLink.Domain.dll
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Domain\obj\Debug\net10.0\refint\CogniLink.Domain.dll
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Domain\obj\Debug\net10.0\CogniLink.Domain.pdb
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Domain\obj\Debug\net10.0\ref\CogniLink.Domain.dll

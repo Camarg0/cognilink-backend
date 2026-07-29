@@ -1,0 +1,16 @@
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\bin\Debug\net10.0\CogniLink.Application.deps.json
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\bin\Debug\net10.0\CogniLink.Application.dll
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\bin\Debug\net10.0\CogniLink.Application.pdb
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\bin\Debug\net10.0\CogniLink.Domain.dll
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\bin\Debug\net10.0\CogniLink.Domain.pdb
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\obj\Debug\net10.0\CogniLink.Application.csproj.AssemblyReference.cache
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\obj\Debug\net10.0\CogniLink.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\obj\Debug\net10.0\CogniLink.Application.AssemblyInfoInputs.cache
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\obj\Debug\net10.0\CogniLink.Application.AssemblyInfo.cs
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\obj\Debug\net10.0\CogniLink.Application.csproj.CoreCompileInputs.cache
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\obj\Debug\net10.0\CogniLink.Application.sourcelink.json
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\obj\Debug\net10.0\CogniLin.82806ECD.Up2Date
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\obj\Debug\net10.0\CogniLink.Application.dll
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\obj\Debug\net10.0\refint\CogniLink.Application.dll
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\obj\Debug\net10.0\CogniLink.Application.pdb
+C:\Users\mathe\OneDrive\Documentos\TCC\repos\backend\cognilink-backend\CogniLink.Application\obj\Debug\net10.0\ref\CogniLink.Application.dll

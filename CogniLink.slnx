@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="CogniLink.Api/CogniLink.Api.csproj" />
+  <Project Path="CogniLink.Application/CogniLink.Application.csproj" />
+  <Project Path="CogniLink.Domain/CogniLink.Domain.csproj" />
+  <Project Path="CogniLink.Infrastructure/CogniLink.Infrastructure.csproj" />
+</Solution>
