@@ -1,6 +1,8 @@
 using CogniLink.Application.Common.Exceptions;
 using CogniLink.Application.Common.Interfaces;
 using CogniLink.Application.Common.Models;
+using CogniLink.Domain.Entities;
+using CogniLink.Domain.Enums;
 using MediatR;
 
 namespace CogniLink.Application.StudySessions.Commands.CancelStudySession;
@@ -28,13 +30,25 @@ public sealed class CancelStudySessionCommandHandler : IRequestHandler<CancelStu
             throw new NotFoundException("Sessao nao encontrada.");
         }
 
+        // Cancelamento repetido e idempotente: devolve o estado ja registrado sem reprocessar.
+        // Sessao concluida, porem, nao pode ser cancelada.
+        if (session.Status == StudySessionStatus.Cancelled)
+        {
+            return ToDto(session);
+        }
+
         if (!session.Cancel())
         {
-            throw new ConflictException("Sessao ja encerrada.");
+            throw new ConflictException("Sessao ja concluida nao pode ser cancelada.");
         }
 
         await _studySessionRepository.UpdateAsync(session, cancellationToken);
 
+        return ToDto(session);
+    }
+
+    private static StudySessionDto ToDto(StudySession session)
+    {
         return new StudySessionDto(
             session.Id,
             session.DeckId,

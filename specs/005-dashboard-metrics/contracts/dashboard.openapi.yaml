@@ -1,0 +1,215 @@
+openapi: 3.0.3
+info:
+  title: CogniLink Dashboard API
+  version: "1.0.0"
+  description: >
+    Contrato dos endpoints de dashboard e métricas (feature 005), somente leitura.
+    Todos os endpoints exigem JWT bearer válido. Ownership é validado pelas
+    regras existentes de deck do usuário autenticado.
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+paths:
+  /dashboard:
+    get:
+      summary: Obter resumo global de progresso do usuário autenticado
+      operationId: getDashboard
+      responses:
+        '200':
+          description: Resumo global calculado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummaryResponse'
+        '401':
+          description: Não autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /decks/{deckId}/statistics:
+    get:
+      summary: Obter estatísticas de um baralho de propriedade do usuário autenticado
+      operationId: getDeckStatistics
+      parameters:
+        - $ref: '#/components/parameters/DeckId'
+      responses:
+        '200':
+          description: Estatísticas do baralho calculadas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeckStatisticsResponse'
+        '401':
+          description: Não autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Baralho inexistente ou de outro usuário.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /analytics/study-history:
+    get:
+      summary: Obter série diária de histórico de estudo do usuário autenticado em um período
+      operationId: getStudyHistory
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Data inicial do período (obrigatória).
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Data final do período (obrigatória).
+      responses:
+        '200':
+          description: Série diária ordenada cronologicamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudyHistoryEntryResponse'
+        '400':
+          description: >
+            Datas ausentes, data inicial posterior à data final, ou intervalo
+            maior que 1 ano.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Não autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    DeckId:
+      name: deckId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+
+    DashboardSummaryResponse:
+      type: object
+      properties:
+        masteryPercentage:
+          type: number
+          format: double
+        totalStudyTimeSeconds:
+          type: integer
+          format: int64
+        completedCardsCount:
+          type: integer
+        retentionRate:
+          type: number
+          format: double
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        dueFlashcardsCount:
+          type: integer
+      required:
+        - masteryPercentage
+        - totalStudyTimeSeconds
+        - completedCardsCount
+        - retentionRate
+        - currentStreak
+        - longestStreak
+        - dueFlashcardsCount
+
+    PerformanceGroupResponse:
+      type: object
+      properties:
+        groupKey:
+          type: string
+        totalAnswers:
+          type: integer
+        correctAnswers:
+          type: integer
+        accuracyRate:
+          type: number
+          format: double
+      required: [groupKey, totalAnswers, correctAnswers, accuracyRate]
+
+    DeckStatisticsResponse:
+      type: object
+      properties:
+        deckId:
+          type: string
+        totalFlashcards:
+          type: integer
+        dueFlashcardsCount:
+          type: integer
+        deckMasteryPercentage:
+          type: number
+          format: double
+        performanceByDifficulty:
+          type: array
+          items:
+            $ref: '#/components/schemas/PerformanceGroupResponse'
+        performanceBySubarea:
+          type: array
+          items:
+            $ref: '#/components/schemas/PerformanceGroupResponse'
+        performanceByType:
+          type: array
+          items:
+            $ref: '#/components/schemas/PerformanceGroupResponse'
+      required:
+        - deckId
+        - totalFlashcards
+        - dueFlashcardsCount
+        - deckMasteryPercentage
+        - performanceByDifficulty
+        - performanceBySubarea
+        - performanceByType
+
+    StudyHistoryEntryResponse:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        answersCount:
+          type: integer
+        correctCount:
+          type: integer
+        incorrectCount:
+          type: integer
+        totalTimeSeconds:
+          type: integer
+          format: int64
+      required: [date, answersCount, correctCount, incorrectCount, totalTimeSeconds]

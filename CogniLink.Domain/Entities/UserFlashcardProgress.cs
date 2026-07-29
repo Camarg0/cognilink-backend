@@ -4,8 +4,12 @@ public sealed class UserFlashcardProgress
 {
     private const double DefaultEaseFactor = 2.5;
     private const double EaseFactorFloor = 1.3;
-    private const double CorrectAnswerEaseBonus = 0.1;
-    private const double WrongAnswerEasePenalty = 0.2;
+
+    // Qualidade SM-2 (0-5) derivada do acerto e da quantidade de dicas consultadas.
+    private const int QualityWrongAnswer = 2;
+    private const int QualityCorrectNoHints = 5;
+    private const int QualityCorrectOneHint = 4;
+    private const int QualityCorrectManyHints = 3;
 
     public string Id { get; private set; } = string.Empty;
     public string FlashcardId { get; private set; } = string.Empty;
@@ -72,23 +76,34 @@ public sealed class UserFlashcardProgress
         };
     }
 
-    public void ApplyReview(bool isCorrect)
+    /// <summary>
+    /// Recalcula o agendamento SM-2 do card. A qualidade da resposta considera o acerto e
+    /// quantas dicas foram consultadas: acertar sem dicas eleva o fator de facilidade,
+    /// enquanto acertar apoiado em dicas o mantem ou reduz.
+    /// </summary>
+    public void ApplyReview(bool isCorrect, int hintsViewed)
     {
+        if (hintsViewed < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(hintsViewed), "HintsViewed must be greater than or equal to zero.");
+        }
+
         var reviewedAt = DateTime.UtcNow;
+        var quality = ResolveQuality(isCorrect, hintsViewed);
+
+        EaseFactor = ApplyEaseFactorFormula(EaseFactor, quality);
 
         if (!isCorrect)
         {
             Lapses++;
             Repetitions = 0;
             IntervalDays = 1;
-            EaseFactor = Math.Max(EaseFactorFloor, EaseFactor - WrongAnswerEasePenalty);
             LastReviewedAt = reviewedAt;
             NextReviewDate = reviewedAt.AddDays(IntervalDays);
             return;
         }
 
         Repetitions++;
-        EaseFactor = Math.Max(EaseFactorFloor, EaseFactor + CorrectAnswerEaseBonus);
 
         IntervalDays = Repetitions switch
         {
@@ -100,4 +115,33 @@ public sealed class UserFlashcardProgress
         LastReviewedAt = reviewedAt;
         NextReviewDate = reviewedAt.AddDays(IntervalDays);
     }
+
+    private static int ResolveQuality(bool isCorrect, int hintsViewed)
+    {
+        if (!isCorrect)
+        {
+            return QualityWrongAnswer;
+        }
+
+        return hintsViewed switch
+        {
+            0 => QualityCorrectNoHints,
+            1 => QualityCorrectOneHint,
+            _ => QualityCorrectManyHints
+        };
+    }
+
+    /// <summary>
+    /// Formula classica de fator de facilidade do SM-2 (Wozniak):
+    /// EF' = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)), com piso de 1.3.
+    /// </summary>
+    private static double ApplyEaseFactorFormula(double easeFactor, int quality)
+    {
+        var qualityGap = 5 - quality;
+        var adjustment = 0.1 - (qualityGap * (0.08 + (qualityGap * 0.02)));
+
+        return Math.Max(EaseFactorFloor, easeFactor + adjustment);
+    }
+
+    public bool IsMastered() => Repetitions >= 2 && IntervalDays >= 21;
 }

@@ -34,6 +34,15 @@ public sealed class FirestoreStudySessionRepository : IStudySessionRepository
         return string.Equals(session.OwnerId, ownerId, StringComparison.Ordinal) ? session : null;
     }
 
+    public async Task<IReadOnlyList<StudySession>> ListByOwnerAsync(string ownerId, CancellationToken cancellationToken)
+    {
+        var query = _firestoreDb.Collection(CollectionName)
+            .WhereEqualTo("ownerId", ownerId);
+
+        var snapshot = await query.GetSnapshotAsync(cancellationToken);
+        return snapshot.Documents.Select(ToDomain).ToList();
+    }
+
     public async Task<IReadOnlyList<StudySession>> ListCompletedByOwnerAsync(string ownerId, CancellationToken cancellationToken)
     {
         var query = _firestoreDb.Collection(CollectionName)

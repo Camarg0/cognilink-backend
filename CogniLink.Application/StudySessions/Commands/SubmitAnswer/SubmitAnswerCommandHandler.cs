@@ -79,7 +79,7 @@ public sealed class SubmitAnswerCommandHandler : IRequestHandler<SubmitAnswerCom
         var progress = await _progressRepository.GetByOwnerAndFlashcardAsync(ownerId, targetFlashcard.Id, cancellationToken)
             ?? UserFlashcardProgress.Create(Guid.NewGuid().ToString("N"), targetFlashcard.Id, ownerId);
 
-        progress.ApplyReview(request.IsCorrect);
+        progress.ApplyReview(request.IsCorrect, request.HintsViewed);
 
         var answer = StudyAnswer.Create(
             Guid.NewGuid().ToString("N"),
