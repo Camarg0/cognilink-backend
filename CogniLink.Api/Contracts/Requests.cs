@@ -19,3 +19,27 @@ public sealed record UpdateProfileRequest(string Name, string Email, string? Pro
 public sealed record CreateDeckRequest(string Name, string? Description, DeckDifficulty Difficulty, List<string>? Categories);
 
 public sealed record UpdateDeckRequest(string Name, string? Description, DeckDifficulty Difficulty, List<string>? Categories);
+
+public sealed record FlashcardAlternativeRequest(string Text, bool IsCorrect);
+
+public sealed record CreateFlashcardRequest(
+	FlashcardType Type,
+	FlashcardDifficulty Difficulty,
+	string? Subarea,
+	List<string>? Hints,
+	string? Question,
+	string? Answer,
+	string? ClozeText,
+	List<string>? ValidAnswers,
+	List<FlashcardAlternativeRequest>? Alternatives);
+
+public sealed record UpdateFlashcardRequest(
+	FlashcardType Type,
+	FlashcardDifficulty Difficulty,
+	string? Subarea,
+	List<string>? Hints,
+	string? Question,
+	string? Answer,
+	string? ClozeText,
+	List<string>? ValidAnswers,
+	List<FlashcardAlternativeRequest>? Alternatives);

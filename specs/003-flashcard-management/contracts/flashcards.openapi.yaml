@@ -1,0 +1,305 @@
+openapi: 3.0.3
+info:
+  title: CogniLink Flashcards API
+  version: "1.0.0"
+  description: >
+    Contrato dos endpoints de gestao de flashcards (feature 003).
+    Todos os endpoints exigem JWT bearer valido. Ownership e validado
+    pelo deck pai do flashcard; recurso inexistente ou sem ownership retorna 404.
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+paths:
+  /decks/{deckId}/flashcards:
+    post:
+      summary: Criar flashcard em deck proprio
+      operationId: createFlashcard
+      parameters:
+        - $ref: '#/components/parameters/DeckId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFlashcardRequest'
+      responses:
+        '201':
+          description: Flashcard criado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlashcardResponse'
+        '400':
+          description: Payload invalido para o tipo informado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Deck inexistente ou de outro usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: Listar flashcards de um deck proprio
+      operationId: listFlashcardsByDeck
+      parameters:
+        - $ref: '#/components/parameters/DeckId'
+      responses:
+        '200':
+          description: Lista de flashcards do deck informado.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FlashcardResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Deck inexistente ou de outro usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /flashcards/{flashcardId}:
+    get:
+      summary: Obter flashcard proprio por id
+      operationId: getFlashcardById
+      parameters:
+        - $ref: '#/components/parameters/FlashcardId'
+      responses:
+        '200':
+          description: Flashcard encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlashcardResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Flashcard inexistente ou sem ownership.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Editar flashcard proprio
+      operationId: updateFlashcard
+      parameters:
+        - $ref: '#/components/parameters/FlashcardId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFlashcardRequest'
+      responses:
+        '200':
+          description: Flashcard atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlashcardResponse'
+        '400':
+          description: Payload invalido para o tipo informado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Flashcard inexistente ou sem ownership.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Excluir flashcard proprio
+      operationId: deleteFlashcard
+      parameters:
+        - $ref: '#/components/parameters/FlashcardId'
+      responses:
+        '204':
+          description: Flashcard excluido.
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Flashcard inexistente ou sem ownership.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    DeckId:
+      name: deckId
+      in: path
+      required: true
+      schema:
+        type: string
+    FlashcardId:
+      name: flashcardId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    FlashcardType:
+      type: string
+      enum: [FrenteVerso, Cloze, DigiteResposta, MultiplaEscolha]
+
+    FlashcardDifficulty:
+      type: string
+      enum: [Facil, Medio, Dificil]
+
+    Alternative:
+      type: object
+      required: [text, isCorrect]
+      properties:
+        text:
+          type: string
+          minLength: 1
+        isCorrect:
+          type: boolean
+
+    CreateFlashcardRequest:
+      type: object
+      required: [type, difficulty]
+      properties:
+        type:
+          $ref: '#/components/schemas/FlashcardType'
+        difficulty:
+          $ref: '#/components/schemas/FlashcardDifficulty'
+        subarea:
+          type: string
+          maxLength: 50
+          nullable: true
+        hints:
+          type: array
+          maxItems: 3
+          items:
+            type: string
+        question:
+          type: string
+          nullable: true
+        answer:
+          type: string
+          nullable: true
+        clozeText:
+          type: string
+          nullable: true
+        validAnswers:
+          type: array
+          items:
+            type: string
+        alternatives:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alternative'
+      description: >
+        Regras condicionais por tipo:
+        FrenteVerso exige question e answer;
+        Cloze exige clozeText com lacunas c1..cN sequenciais;
+        DigiteResposta exige validAnswers com pelo menos 1 item nao vazio;
+        MultiplaEscolha exige 2 a 5 alternativas e exatamente 1 correta.
+
+    UpdateFlashcardRequest:
+      allOf:
+        - $ref: '#/components/schemas/CreateFlashcardRequest'
+      description: >
+        Permite editar todos os campos do flashcard, reaplicando as mesmas regras
+        condicionais por tipo da criacao.
+
+    FlashcardResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        deckId:
+          type: string
+        type:
+          $ref: '#/components/schemas/FlashcardType'
+        difficulty:
+          $ref: '#/components/schemas/FlashcardDifficulty'
+        subarea:
+          type: string
+          nullable: true
+        hints:
+          type: array
+          items:
+            type: string
+        question:
+          type: string
+          nullable: true
+        answer:
+          type: string
+          nullable: true
+        clozeText:
+          type: string
+          nullable: true
+        validAnswers:
+          type: array
+          items:
+            type: string
+          nullable: true
+        alternatives:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alternative'
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
