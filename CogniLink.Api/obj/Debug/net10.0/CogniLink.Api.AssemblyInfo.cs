@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CogniLink.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a879f95bd618402f2f0d11b16ca468e95605771c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ccd44a0c9eb11185a1df30df68a06d914442ce9c")]
 [assembly: System.Reflection.AssemblyProductAttribute("CogniLink.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CogniLink.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

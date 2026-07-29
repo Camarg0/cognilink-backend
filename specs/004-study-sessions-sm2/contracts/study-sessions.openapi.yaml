@@ -1,0 +1,446 @@
+openapi: 3.0.3
+info:
+  title: CogniLink Study Sessions API
+  version: "1.0.0"
+  description: >
+    Contrato dos endpoints de sessoes de estudo com SM-2 (feature 004).
+    Todos os endpoints exigem JWT bearer valido. Ownership e validado
+    pelas regras existentes de deck/flashcard do usuario autenticado.
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+paths:
+  /study-sessions:
+    post:
+      summary: Iniciar sessao de estudo para deck proprio
+      operationId: startStudySession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartStudySessionRequest'
+      responses:
+        '201':
+          description: Sessao iniciada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudySessionResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Deck inexistente ou de outro usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Deck proprio sem flashcards (erro de negocio).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /study-sessions/{sessionId}/next-card:
+    get:
+      summary: Obter proximo card pendente da sessao
+      operationId: getNextStudyCard
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Proximo card disponivel para resposta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NextCardResponse'
+        '204':
+          description: Sessao sem mais cards pendentes.
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Sessao inexistente ou sem ownership.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Sessao nao esta em progresso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /study-sessions/{sessionId}/answers:
+    post:
+      summary: Registrar resposta de card na sessao
+      operationId: submitStudyAnswer
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitAnswerRequest'
+      responses:
+        '200':
+          description: Resposta processada (ou reaproveitada por idempotencia).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitAnswerResponse'
+        '400':
+          description: Payload invalido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Sessao/attempt/card inexistente ou sem ownership.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Sessao nao esta em progresso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /study-sessions/{sessionId}/complete:
+    post:
+      summary: Concluir sessao de estudo
+      operationId: completeStudySession
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Sessao concluida com resumo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudySessionSummaryResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Sessao inexistente ou sem ownership.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Sessao ja encerrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /study-sessions/{sessionId}/cancel:
+    post:
+      summary: Cancelar sessao em andamento
+      operationId: cancelStudySession
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Sessao cancelada com estado final.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudySessionResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Sessao inexistente ou sem ownership.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Sessao ja encerrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reviews/due:
+    get:
+      summary: Listar cards pendentes de revisao agregados
+      operationId: getDueFlashcards
+      responses:
+        '200':
+          description: Lista de cards pendentes do usuario autenticado.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DueFlashcardResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/me/streak:
+    get:
+      summary: Consultar streak atual e maior streak
+      operationId: getUserStreak
+      responses:
+        '200':
+          description: Streak calculada por dias distintos com sessao concluida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStreakResponse'
+        '401':
+          description: Nao autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    StudySessionStatus:
+      type: string
+      enum: [InProgress, Completed, Cancelled]
+
+    StartStudySessionRequest:
+      type: object
+      required: [deckId]
+      properties:
+        deckId:
+          type: string
+
+    StudySessionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        deckId:
+          type: string
+        status:
+          $ref: '#/components/schemas/StudySessionStatus'
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    NextCardResponse:
+      type: object
+      required: [sessionId, flashcardId, attemptId]
+      properties:
+        sessionId:
+          type: string
+        flashcardId:
+          type: string
+        attemptId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          nullable: true
+        difficulty:
+          type: string
+          nullable: true
+        question:
+          type: string
+          nullable: true
+        answer:
+          type: string
+          nullable: true
+        clozeText:
+          type: string
+          nullable: true
+        alternatives:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/Alternative'
+        hints:
+          type: array
+          nullable: true
+          items:
+            type: string
+        dueState:
+          type: string
+          description: NEVER_REVIEWED ou OVERDUE.
+
+    SubmitAnswerRequest:
+      type: object
+      required: [attemptId, isCorrect, timeToAnswerSeconds, hintsViewed]
+      properties:
+        attemptId:
+          type: string
+          format: uuid
+        isCorrect:
+          type: boolean
+        timeToAnswerSeconds:
+          type: integer
+          minimum: 0
+        hintsViewed:
+          type: integer
+          minimum: 0
+
+    SubmitAnswerResponse:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        flashcardId:
+          type: string
+        attemptId:
+          type: string
+          format: uuid
+        wasIdempotentReplay:
+          type: boolean
+        isCorrect:
+          type: boolean
+        answeredAt:
+          type: string
+          format: date-time
+        progress:
+          $ref: '#/components/schemas/UserFlashcardProgressResponse'
+
+    UserFlashcardProgressResponse:
+      type: object
+      properties:
+        easeFactor:
+          type: number
+          format: double
+        intervalDays:
+          type: integer
+        nextReviewDate:
+          type: string
+          format: date-time
+          nullable: true
+        repetitions:
+          type: integer
+        lapses:
+          type: integer
+        lastReviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    StudySessionSummaryResponse:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        status:
+          $ref: '#/components/schemas/StudySessionStatus'
+        cardsStudied:
+          type: integer
+        correctAnswers:
+          type: integer
+        accuracyRate:
+          type: number
+          format: double
+        durationSeconds:
+          type: integer
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+
+    DueFlashcardResponse:
+      type: object
+      properties:
+        flashcardId:
+          type: string
+        deckId:
+          type: string
+        nextReviewDate:
+          type: string
+          format: date-time
+          nullable: true
+        easeFactor:
+          type: number
+          format: double
+        intervalDays:
+          type: integer
+        repetitions:
+          type: integer
+        lapses:
+          type: integer
+
+    UserStreakResponse:
+      type: object
+      properties:
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        lastStudyDate:
+          type: string
+          format: date
+          nullable: true
+
+    Alternative:
+      type: object
+      required: [text, isCorrect]
+      properties:
+        text:
+          type: string
+        isCorrect:
+          type: boolean
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string

@@ -27,6 +27,9 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenRepository, FirestoreRefreshTokenRepository>();
         services.AddScoped<IPasswordResetTokenRepository, FirestorePasswordResetTokenRepository>();
         services.AddScoped<IDeckRepository, FirestoreDeckRepository>();
+        services.AddScoped<IStudySessionRepository, FirestoreStudySessionRepository>();
+        services.AddScoped<IStudyAnswerRepository, FirestoreStudyAnswerRepository>();
+        services.AddScoped<IUserFlashcardProgressRepository, FirestoreUserFlashcardProgressRepository>();
         services.AddScoped<IEmailSender, EmailSender>();
 
         return services;

@@ -43,3 +43,11 @@ public sealed record UpdateFlashcardRequest(
 	string? ClozeText,
 	List<string>? ValidAnswers,
 	List<FlashcardAlternativeRequest>? Alternatives);
+
+public sealed record StartStudySessionRequest(string DeckId);
+
+public sealed record SubmitStudyAnswerRequest(
+	Guid AttemptId,
+	bool IsCorrect,
+	int TimeToAnswerSeconds,
+	int HintsViewed);
